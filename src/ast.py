@@ -23,6 +23,9 @@ class Add(Expression):
     def __eq__(self, other):
         return self.a.__eq__(self.b)
 
+    def __str__(self):
+        return f'{self.a} + {self.b}'
+
 
 class Mul(Expression):
     def __init__(self, a: Expression, b: Expression):
@@ -35,6 +38,9 @@ class Mul(Expression):
     def __eq__(self, other):
         return self.a.__eq__(self.b)
 
+    def __str__(self):
+        return f'{self.a} * {self.b}'
+
 
 class Const(Expression):
     def __init__(self, value):
@@ -45,6 +51,9 @@ class Const(Expression):
 
     def __eq__(self, other):
         return isinstance(other, Const) and self.value == other.value
+
+    def __str__(self):
+        return str(self.value)
 
 
 class Name(Expression, Receiver):
@@ -57,6 +66,9 @@ class Name(Expression, Receiver):
     def __eq__(self, other):
         return isinstance(other, Name) and self.name == other.name
 
+    def __str__(self):
+        return f'@{self.name}'
+
 
 class Assign(Expression):
     def __init__(self, a: Receiver, b: Expression):
@@ -65,8 +77,13 @@ class Assign(Expression):
 
     def evaluate(self, env):
         env[self.a.name] = self.b.evaluate(env)
-
         return env[self.a.name]
+
+    def __eq__(self, other):
+        return self.a.__eq__(other.a) and self.b.__eq__(other.b)
+
+    def __str__(self):
+        return f'{self.a} = {self.b}'
 
 
 class Program:
@@ -81,3 +98,14 @@ class Program:
             values.append(expr.evaluate(env))
 
         return values
+
+    def __eq__(self, other):
+        if not isinstance(other, Program):
+            return False
+        if len(self.exprs) != len(other.exprs):
+            return False
+        for i in range(len(self.exprs)):
+            if self.exprs[i] != other.exprs[i]:
+                return False
+
+        return True
