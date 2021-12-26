@@ -21,7 +21,7 @@ class Add(Expression):
         return self.a.evaluate(env) + self.b.evaluate(env)
 
     def __eq__(self, other):
-        return self.a.__eq__(self.b)
+        return self.a == other.a and self.b == other.b
 
     def __str__(self):
         return f'{self.a} + {self.b}'
@@ -36,7 +36,7 @@ class Mul(Expression):
         return self.a.evaluate(env) * self.b.evaluate(env)
 
     def __eq__(self, other):
-        return self.a.__eq__(self.b)
+        return self.a == other.a and self.b == other.b
 
     def __str__(self):
         return f'{self.a} * {self.b}'

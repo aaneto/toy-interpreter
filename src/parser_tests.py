@@ -1,5 +1,5 @@
-from .ast import Assign, Const, Name, Program
-from .parser import parse, parse_expr
+from .ast import Add, Assign, Const, Name, Mul, Program
+from .parser import ParseError, parse, parse_expr
 import unittest
 
 
@@ -14,15 +14,34 @@ class TestParser(unittest.TestCase):
         self.assertEqual(parse_expr(".5"), Const(0.5))
 
     def test_parse_invalid_number(self):
-        self.assertEqual(parse_expr("0."), None)
+        self.assertRaises(ParseError, parse_expr, '0.')
 
     def test_parse_name(self):
         self.assertEqual(parse_expr('var_name'), Name('var_name'))
 
     def test_parse_invalid_expr(self):
-        expr = parse_expr('==')
+        self.assertRaises(ParseError, parse_expr, '==')
 
-        self.assertEqual(expr, None)
+    def test_mul(self):
+        self.assertEqual(parse_expr('2 * 3'), Mul(Const(2), Const(3)))
+
+    def test_operations_01(self):
+        expr = parse_expr('2 + 3 * 7 * 2 + 2 * 3')
+        self.assertEqual(
+            expr.evaluate({}),
+            2 + 3 * 7 * 2 + 2 * 3
+        )
+
+        self.assertEqual(
+            expr,
+            Add(
+                Const(2),
+                Add(
+                    Mul(Const(3), Mul(Const(7), Const(2))),
+                    Mul(Const(2), Const(3))
+                )
+            )
+        )
 
     def test_assign_whitespace(self):
         expr = parse_expr(' var = 11   ')
@@ -36,7 +55,21 @@ class TestParser(unittest.TestCase):
         )
 
     def test_small_program_without_whitespace(self):
-        small_src = """age=20;300;age"""
+        small_src = """age=20;300;age;"""
+        parsed_program = Program([
+            Assign(Name('age'), Const(20)),
+            Const(300),
+            Name('age')
+        ])
+
+        self.assertEqual(parse(small_src), parsed_program)
+
+    def test_small_program_whitespace(self):
+        small_src = """
+            age = 20;
+            300;
+            age;
+        """
         parsed_program = Program([
             Assign(Name('age'), Const(20)),
             Const(300),
